@@ -16,7 +16,7 @@
     "ui5"
   ],
   "author": "Merlin Reichwald",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.0",
@@ -41,5 +41,16 @@
     "@babel/plugin-syntax-jsx": "^7.2.0",
     "@babel/template": "^7.1.2",
     "@babel/types": "^7.2.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Merlin-R/babel-plugin-ui5-jsx-rm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Merlin-R/babel-plugin-ui5-jsx-rm/issues"
+  },
+  "homepage": "https://github.com/Merlin-R/babel-plugin-ui5-jsx-rm#readme"
 }
