@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./dist/",
+    "rootDir": "./src/",
+    "strict": false,
+    "moduleResolution": "node",
+    //"baseUrl": "./src/",
+    "esModuleInterop": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "testsetup.ts"
+  ]
+}

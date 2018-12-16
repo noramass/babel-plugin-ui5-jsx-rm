@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var template_1 = __importDefault(require("@babel/template"));
+var tId = template_1.default("RM.writeAttributeEscaped(\"id\",CONTROL.getId() + \"-\" + ID)");
+exports.tmplId = function (rm, control, id) { return tId({ RM: rm, CONTROL: control, ID: id }); };
+var tClasses = template_1.default("(function(cls){\n  cls = cls || [];\n  if (typeof cls === \"string\")\n    cls = cls.split(/[\\s\\S]/g);\n  if (cls instanceof Array)\n    cls.forEach(RM.addClass.bind(RM));\n  else if (typeof cls === \"object\")\n    for (var key in cls) if (cls[key])\n      RM.addClass(key);\n})(CLASSES)");
+exports.tmplClasses = function (rm, classes) { return tClasses({ RM: rm, CLASSES: classes }); };
+var tStyles = template_1.default("(function(styles){\n  styles = styles || {};\n  if (typeof styles === \"string\")\n    styles.split(';').forEach(function(style){\n      var parts = style.split(\":\");\n      RM.addStyle(parts[0].trim(), parts[1].trim());\n    });\n  else if (styles instanceof Array)\n    styles.forEach(function(style){\n      RM.addStyle(style.name, style.value);\n    });\n  else\n    for (var key in styles)\n      RM.addStyle(key, styles[key]);\n  RM.writeStyles();\n})(STYLES)");
+exports.tmplStyles = function (rm, styles) { return tStyles({ RM: rm, STYLES: styles }); };
+var tAttributes = template_1.default("(function(attrs){\n  attrs = attrs || {};\n  for (var k in attrs)\n    RM.writeAttributeEscaped(k, attrs[k]);\n})(ATTRIBUTES)");
+exports.tmplAttributes = function (rm, attributes) { return tAttributes({ RM: rm, ATTRIBUTES: attributes }); };
+var tHandler = template_1.default("this.DOLLAR().find(ELEMENT).on(EVENT,HANDLER)");
+exports.tmplHandler = function (element, event, handler) { return tHandler({ DOLLAR: '$', ELEMENT: element, EVENT: event, HANDLER: handler }); };
+var tAggregation = template_1.default("(AGGREGATION || []).forEach(RM.renderControl.bind(RM));");
+exports.tmplAggregation = function (rm, aggregation) { return tAggregation({ RM: rm, AGGREGATION: aggregation }); };
+var tControl = template_1.default("if (CONTROL) RM.renderControl(CONTROL);");
+exports.tmplControl = function (rm, control) { return tControl({ RM: rm, CONTROL: control }); };

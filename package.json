@@ -1,0 +1,45 @@
+{
+  "name": "@rdme/babel-plugin-jsx-ui5",
+  "version": "1.0.1",
+  "description": "Babel transformer for JSX syntax to UI5 RM calls",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test": "mocha | simple-stacktrace",
+    "build": "tsc"
+  },
+  "keywords": [
+    "rdme",
+    "babel",
+    "plugin",
+    "jsx",
+    "ui5"
+  ],
+  "author": "Merlin Reichwald",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.2.0",
+    "@babel/core": "^7.2.0",
+    "@babel/generator": "^7.2.0",
+    "@babel/runtime": "^7.2.0",
+    "@types/babel-core": "^6.25.5",
+    "@types/babel-plugin-syntax-jsx": "^6.18.0",
+    "@types/babel-template": "^6.25.1",
+    "@types/babel-types": "^7.0.4",
+    "@types/babel__traverse": "^7.0.4",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.12",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "simple-stacktrace": "^0.2.1",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.1"
+  },
+  "dependencies": {
+    "@babel/plugin-syntax-jsx": "^7.2.0",
+    "@babel/template": "^7.1.2",
+    "@babel/types": "^7.2.0"
+  }
+}
