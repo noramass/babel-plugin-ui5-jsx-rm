@@ -15,10 +15,9 @@ To use this plugin simply install it via `npm i --save-dev @rdme/babel-plugin-js
 }
 ```
 
-For event handlers it will generate special handler classes to attach to in the `onAfterRendering` method, creating one if none exist.
-
 ## Control Data
 To write control data, like control ids, etc. use the `ui5control` attribute. It supports an optional jsx expression containing the control.
+
 Ex1:
 ```JSX
 <div ui5control />
@@ -41,6 +40,7 @@ rm.write("/>");
 Element data functions exactly like control data, just using the `ui5element` attribute instead.
 ## IDs
 ID attributes are automatically prefixed by the control id. It works with text nodes and jsx expressions.
+
 Ex1:
 ```JSX
 <span id="someSpan" />
@@ -63,6 +63,7 @@ rm.write("/>");
 Classes can be defined using a string with space-sepparated class name or a jsx expression.
 If a jsx expression is given, it may contain anything resembling an array, an object or a string.
 This does not have to be a literal.
+
 Examples:
 ```JSX
 <div class="some class"></div>
@@ -75,6 +76,7 @@ Examples:
 Styles can be defined using a string with styles or a jsx expression.
 If a jsx expression is given, it may contain anything resembling an array, an object or a string.
 This does not have to be a literal.
+
 Examples:
 ```JSX
 <div style="width:10px;height:20px;"></div>
@@ -87,6 +89,7 @@ Examples:
 Event handlers are special attributes starting with "on" (e.g. "onclick"). They expect a value in form of a jsx expression or string literal and are only supported inside of classes or UI5 'extend' expressions, as they modify or create the `onAfterRendering` method for the given control.
 These attributes will be stripped from the control and a special handler class ('\_\_handler' + incrementing number) is added. Later in the onAfterRendering method the event handlers will be attached to the controls using jQuery.
 If a string is given as a value, it is assumed to be a method declared on the current control and will be bound correspondingly. If however a jsx expression is given, it will not be bound or accessed on "this", so it is necessary to bind it yourself. Also take note that since the contents of the expressions are moved to the onAfterRendering method, the this context changes from the renderer to the control.
+
 Ex1:
 ```JSX
 // Renderer
@@ -154,6 +157,7 @@ They will not be interpreted by the special attributes such as "id", "class", "s
 ## Aggregations
 Aggregations with multiple controls can be embedded with `<ui5aggregation>` tags. They expect either a text node or jsx expression as a child. If a text node is given, it will look up the given text (trimmed) with `control.getAggregation(text)`.
 If a jsx expression is given, it will just use it without wrapping it in a `control.getAggregation` call.
+
 Ex1:
 ```JSX
 <ui5aggregation>content</ui5aggregation>
@@ -170,6 +174,7 @@ Ex2:
 ## Controls
 Single control aggregations can be embedded with `<ui5control>` tags. Similar to aggregations with multiple controls, single control aggregations expect either a text node or jsx expression as a child. If a text node is given, it will look up the given text (trimmed) with `control.getAggregation(text)`.
 If a jsx expression is given, it will just use it without wrapping it in a `control.getAggregation` call.
+
 Ex1:
 ```JSX
 <ui5control>content</ui5control>
@@ -185,6 +190,7 @@ if(control.getContent()) rm.renderControl(control.getContent());
 ## Icons
 For UI5 Icons there exists a helper tag called `<ui5icon>`. It expects a text node or jsx expression as a child.
 If a text node is given, it is assumed to be an icon url or image source. If you need to provide additional classes or attributes, you can pass a jsx expression with an embedded array literal instead. All arguments provided in said array literal are passed to the UI5 RenderManager method `writeIcon`.
+
 Ex1:
 ```JSX
 <ui5icon>sap-icon://accept</ui5icon>
@@ -258,7 +264,7 @@ export default class MyControl extends Control {
 			buttonPress: {}
 		}
 	},
-	static renderer: {
+	static renderer = {
 		render(rm, control) {
 			rm.render(<div ui5control>
 				<h1>{control.getTitle()}</h1>
@@ -280,5 +286,4 @@ export default class MyControl extends Control {
 		},
 	}
 }
-
 ```
