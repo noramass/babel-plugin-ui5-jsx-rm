@@ -116,11 +116,11 @@ export default class Renderer {
   findOrCreateOnAfterRendering(): NodePath<Function> | void {
     if (this.controlClass) {
       let oar = this.findOnAfterRenderingMethod();
-      if ( oar ) return oar;
+      if (oar) return oar;
       return this.createOnAfterRenderingMethod();
     } else if (this.controlObject) {
       let oar = this.findOnAfterRenderingProperty();
-      if ( oar ) return oar;
+      if (oar) return oar;
       return this.createOnAfterRenderingProperty();
     }
   }
@@ -128,8 +128,8 @@ export default class Renderer {
   findOnAfterRenderingMethod(): NodePath<Function> | void {
     let onAfterRendering: NodePath<Function> | void;
     this.controlClass.traverse({
-      ClassMethod(path:NodePath<ClassMethod>){
-        if ( (<Identifier>path.node.key).name === "onAfterRendering" )
+      ClassMethod(path: NodePath<ClassMethod>) {
+        if ((<Identifier>path.node.key).name === "onAfterRendering")
           onAfterRendering = path;
       }
     });
@@ -139,8 +139,8 @@ export default class Renderer {
   findOnAfterRenderingProperty(): NodePath<Function> | void {
     let onAfterRendering: NodePath<Function> | void;
     this.controlObject.traverse({
-      ObjectProperty(path:NodePath<ObjectProperty>) {
-        if ( path.node.key.name === "onAfterRendering" )
+      ObjectProperty(path: NodePath<ObjectProperty>) {
+        if (path.node.key.name === "onAfterRendering")
           onAfterRendering = <NodePath<ObjectMethod>><any>path.get('value');
       }
     });
@@ -184,10 +184,16 @@ export default class Renderer {
   }
 
   write(str: Expression) {
+    if (str.type === "StringLiteral")
+      if (/^\s*$/.test(str.value))
+        return
     this._call("write", str);
   }
 
   writeEscaped(str: Expression) {
+    if (str.type === "StringLiteral")
+      if (/^\s*$/.test(str.value))
+        return
     this._call("writeEscaped", str);
   }
 
@@ -242,7 +248,7 @@ export default class Renderer {
     this.write(stringLiteral(`<${tag}`));
     attrs.forEach(this.renderAttribute.bind(this));
     this.writeClasses();
-    this.write(stringLiteral(single ? `/>` :`>`));
+    this.write(stringLiteral(single ? `/>` : `>`));
     children.forEach(child => {
       switch (child.type) {
         case "JSXElement": this.renderElement(child); break;
@@ -289,41 +295,41 @@ export default class Renderer {
   }
 
   renderId(val: StringLiteral | JSXElement | JSXFragment | JSXExpressionContainer) {
-    this.rmcalls.push(tmplId(this.rm,this.control,val.type === "JSXExpressionContainer" ? val.expression : val));
+    this.rmcalls.push(tmplId(this.rm, this.control, val.type === "JSXExpressionContainer" ? val.expression : val));
   }
 
   renderClass(val: StringLiteral | JSXElement | JSXFragment | JSXExpressionContainer) {
-    if ( val.type === "StringLiteral" )
-      return val.value.split(/[\s]/g).map(s=>s.trim()).filter(s=>s).map(s=>stringLiteral(s)).forEach(this.addClass.bind(this));
-    this.rmcalls.push(tmplClasses(this.rm,val.type === "JSXExpressionContainer" ? val.expression : val));
+    if (val.type === "StringLiteral")
+      return val.value.split(/[\s]/g).map(s => s.trim()).filter(s => s).map(s => stringLiteral(s)).forEach(this.addClass.bind(this));
+    this.rmcalls.push(tmplClasses(this.rm, val.type === "JSXExpressionContainer" ? val.expression : val));
   }
 
   renderStyle(val: StringLiteral | JSXElement | JSXFragment | JSXExpressionContainer) {
-    if ( val.type === "StringLiteral" )
-      val.value.split(';').map(s=>s.trim()).filter(s=>s).map(style=>style.split(':')).forEach(parts=>this.addStyle(stringLiteral(parts[0].trim()),stringLiteral(parts[1].trim())));
+    if (val.type === "StringLiteral")
+      val.value.split(';').map(s => s.trim()).filter(s => s).map(style => style.split(':')).forEach(parts => this.addStyle(stringLiteral(parts[0].trim()), stringLiteral(parts[1].trim())));
     else
-      this.rmcalls.push(tmplStyles(this.rm,val.type === "JSXExpressionContainer" ? val.expression : val));
+      this.rmcalls.push(tmplStyles(this.rm, val.type === "JSXExpressionContainer" ? val.expression : val));
     this.writeStyles();
   }
 
   renderAttributes(node: JSXSpreadAttribute) {
-    this.rmcalls.push(tmplAttributes(this.rm,node.argument));
+    this.rmcalls.push(tmplAttributes(this.rm, node.argument));
   }
 
   renderSpecialAttribute(name: string, val: StringLiteral | JSXElement | JSXFragment | JSXExpressionContainer) {
-    switch(name) {
+    switch (name) {
       case "ui5control": this.writeControlData(); break;
       case "ui5element": this.writeElementData(); break;
       case "ui5aria":
-        if ( !val )
-          return this.writeAccessibilityState( this.control, objectExpression([]) );
-        if ( val.type === "JSXExpressionContainer" && val.expression.type !== "JSXEmptyExpression" ) {
-          if ( val.expression.type === "ArrayExpression" ) {
+        if (!val)
+          return this.writeAccessibilityState(this.control, objectExpression([]));
+        if (val.type === "JSXExpressionContainer" && val.expression.type !== "JSXEmptyExpression") {
+          if (val.expression.type === "ArrayExpression") {
             let elements = val.expression.elements;
-            if ( elements.length === 2 ) {
-              return this.writeAccessibilityState(<any>elements[0],<any>elements[1]);
+            if (elements.length === 2) {
+              return this.writeAccessibilityState(<any>elements[0], <any>elements[1]);
             }
-          } else if ( val.expression.type === "ObjectExpression" ) {
+          } else if (val.expression.type === "ObjectExpression") {
             return this.writeAccessibilityState(this.control, val.expression);
           }
         }
@@ -336,17 +342,17 @@ export default class Renderer {
     let clsName = nextHandlerId();
     let handler: Expression;
     this.addClass(stringLiteral(clsName));
-    if ( val.type === "JSXExpressionContainer" && val.expression.type !== "JSXEmptyExpression" )
+    if (val.type === "JSXExpressionContainer" && val.expression.type !== "JSXEmptyExpression")
       handler = val.expression;
-    if ( val.type === "StringLiteral" )
-      handler = callExpression(memberExpression(memberExpression(thisExpression(),identifier(val.value)),identifier("bind")),[thisExpression()]);
-    else if ( val.type !== "JSXExpressionContainer" )
+    if (val.type === "StringLiteral")
+      handler = callExpression(memberExpression(memberExpression(thisExpression(), identifier(val.value)), identifier("bind")), [thisExpression()]);
+    else if (val.type !== "JSXExpressionContainer")
       handler = val;
-    this.handlerAttachments.push(tmplHandler(stringLiteral('.' + clsName),stringLiteral(name.substr(2)),handler));
+    this.handlerAttachments.push(tmplHandler(stringLiteral('.' + clsName), stringLiteral(name.substr(2)), handler));
   }
 
   renderSpecialTag(tag: string, node: JSXElement) {
-    switch(tag) {
+    switch (tag) {
       case "ui5ctrl":
       case "ui5control": this.renderUI5Control(node); break;
       case "ui5aggr":
@@ -356,63 +362,63 @@ export default class Renderer {
     }
   }
 
-  renderUI5Control( node: JSXElement ) {
+  renderUI5Control(node: JSXElement) {
     let child = node.children[0];
     let expr: Expression;
     if (!child) throw new SyntaxError("Expected child element for ui5control tag.");
-    switch( child.type ) {
+    switch (child.type) {
       case "JSXExpressionContainer":
-        if ( child.expression.type === "JSXEmptyExpression" )
+        if (child.expression.type === "JSXEmptyExpression")
           throw new SyntaxError("Expected child element for ui5control tag to not be empty.");
         expr = child.expression;
         break;
       case "JSXText":
-        expr = callExpression(memberExpression(this.control,identifier("getAggregation")),[stringLiteral(child.value)]);
+        expr = callExpression(memberExpression(this.control, identifier("getAggregation")), [stringLiteral(child.value)]);
         break;
       default:
         throw new SyntaxError("Expected child element for ui5control tag to be of type JSXExpressionContainer or JSXText.");
     }
-    this.rmcalls.push(tmplControl(this.rm,expr));
+    this.rmcalls.push(tmplControl(this.rm, expr));
   }
 
-  renderUI5Aggregation( node: JSXElement ) {
+  renderUI5Aggregation(node: JSXElement) {
     let child = node.children[0];
     let expr: Expression;
     if (!child) throw new SyntaxError("Expected child element for ui5aggregation tag.");
-    switch( child.type ) {
+    switch (child.type) {
       case "JSXExpressionContainer":
-        if ( child.expression.type === "JSXEmptyExpression" )
+        if (child.expression.type === "JSXEmptyExpression")
           throw new SyntaxError("Expected child element for ui5aggregation tag to not be empty.");
         expr = child.expression;
         break;
       case "JSXText":
-        expr = callExpression(memberExpression(this.control,identifier("getAggregation")),[stringLiteral(child.value)]);
+        expr = callExpression(memberExpression(this.control, identifier("getAggregation")), [stringLiteral(child.value)]);
         break;
       default:
         throw new SyntaxError("Expected child element for ui5aggregation tag to be of type JSXExpressionContainer or JSXText.");
     }
-    this.rmcalls.push(tmplAggregation(this.rm,expr));
+    this.rmcalls.push(tmplAggregation(this.rm, expr));
   }
 
-  renderUI5Icon( node:JSXElement ) {
+  renderUI5Icon(node: JSXElement) {
     let child = node.children[0];
     if (!child) throw new SyntaxError("Expected child element for ui5icon tag.");
-    switch ( child.type ) {
+    switch (child.type) {
       case "JSXExpressionContainer":
-      if ( child.expression.type === "JSXEmptyExpression" )
-        throw new SyntaxError("Expected child element for ui5icon tag to not be empty.");
-        if ( child.expression.type === "ArrayExpression" ) {
+        if (child.expression.type === "JSXEmptyExpression")
+          throw new SyntaxError("Expected child element for ui5icon tag to not be empty.");
+        if (child.expression.type === "ArrayExpression") {
           let elements = child.expression.elements;
-          this.writeIcon(<any>elements[0],<any>elements[1],<any>elements[2]);
-        } else if ( child.expression.type === "StringLiteral" ) {
+          this.writeIcon(<any>elements[0], <any>elements[1], <any>elements[2]);
+        } else if (child.expression.type === "StringLiteral") {
           this.writeIcon(child.expression);
         } else {
           this.writeIcon(child.expression);
         }
-      break;
+        break;
       case "JSXText":
         this.writeIcon(stringLiteral(child.value));
-      break;
+        break;
       default:
         throw new SyntaxError("Expected child element for ui5icon tag to be of type JSXExpressionContainer or JSXText.");
     }
@@ -426,8 +432,8 @@ export default class Renderer {
     this.path.parentPath.replaceWithMultiple(this.rmcalls);
   }
   transformOnAfterRendering(): void {
-    if ( !this.onAfterRendering ) return;
-    (<any>this.onAfterRendering.get("body")).pushContainer("body",this.handlerAttachments);
+    if (!this.onAfterRendering) return;
+    (<any>this.onAfterRendering.get("body")).pushContainer("body", this.handlerAttachments);
   }
 
 }

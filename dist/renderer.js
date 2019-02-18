@@ -160,9 +160,15 @@ var Renderer = /** @class */ (function () {
         return types_1.memberExpression(this.rm, types_1.identifier(name));
     };
     Renderer.prototype.write = function (str) {
+        if (str.type === "StringLiteral")
+            if (/^\s*$/.test(str.value))
+                return;
         this._call("write", str);
     };
     Renderer.prototype.writeEscaped = function (str) {
+        if (str.type === "StringLiteral")
+            if (/^\s*$/.test(str.value))
+                return;
         this._call("writeEscaped", str);
     };
     Renderer.prototype.writeAttribute = function (name, value) {

@@ -1,6 +1,6 @@
 {
   "name": "@rdme/babel-plugin-jsx-ui5",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Babel transformer for JSX syntax to UI5 RM calls",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
