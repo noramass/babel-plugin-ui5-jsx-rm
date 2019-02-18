@@ -9,17 +9,22 @@ export default class Renderer {
     rmcalls: Statement[];
     handlerAttachments: Statement[];
     rm: Identifier;
-    control: Identifier;
+    _control: Identifier;
     controlClass?: NodePath<ClassBody>;
     controlObject?: NodePath<ObjectExpression>;
     onAfterRendering?: NodePath<Function>;
+    renderFunction?: NodePath<Function>;
+    needsControl: boolean;
+    readonly control: Identifier;
     constructor(path: NodePath<JSXElement>);
     _isRenderCall(node: Node): node is CallExpression;
     /**
      * find the render manager identifier from render call signature.
+     * If that fails, searches the parent function call for its first argument.
      * If it can't find any, it returns a default identifier "rm".
      * @return {Identifier} the render manager name
      * @example oRM.render(<div></div>); // => oRM
+     * @example render(oRM) { <div></div> } // => oRM
      * @example <div></div> // => rm (default)
      */
     findRenderManager(): Identifier;

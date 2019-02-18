@@ -12,13 +12,20 @@ var Renderer = /** @class */ (function () {
         this.rmcalls = [];
         this.handlerAttachments = [];
         this.path = path;
+        this.needsControl = false;
         this.rm = this.findRenderManager();
-        this.control = this.findControl();
         this.controlClass = this.findControlClass() || undefined;
         this.controlObject = this.findControlObject() || undefined;
         this.onAfterRendering = this.findOrCreateOnAfterRendering() || undefined;
         this.buildFromJSX();
     }
+    Object.defineProperty(Renderer.prototype, "control", {
+        get: function () {
+            return this._control || (this._control = this.findControl());
+        },
+        enumerable: true,
+        configurable: true
+    });
     Renderer.prototype._isRenderCall = function (node) {
         return types_1.isCallExpression(node)
             && types_1.isMemberExpression(node.callee)
@@ -27,16 +34,38 @@ var Renderer = /** @class */ (function () {
     };
     /**
      * find the render manager identifier from render call signature.
+     * If that fails, searches the parent function call for its first argument.
      * If it can't find any, it returns a default identifier "rm".
      * @return {Identifier} the render manager name
      * @example oRM.render(<div></div>); // => oRM
+     * @example render(oRM) { <div></div> } // => oRM
      * @example <div></div> // => rm (default)
      */
     Renderer.prototype.findRenderManager = function () {
         var parent = this.path;
+        var name = "rm";
         while (parent && !this._isRenderCall(parent.node))
             parent = parent.parentPath;
-        return types_1.identifier(parent && parent.node ? parent.node.callee.object.name : "rm");
+        if (parent && parent.node) {
+            name = parent.node.callee.object.name;
+        }
+        else {
+            parent = this.path;
+            while (parent && parent.node) {
+                if (parent.node.type === 'FunctionDeclaration'
+                    || parent.node.type === 'ArrowFunctionExpression'
+                    || parent.node.type === 'ObjectMethod'
+                    || parent.node.type === 'ClassMethod') {
+                    this.renderFunction = parent;
+                    var params = parent.node.params;
+                    if (params.length >= 1)
+                        name = params[0].name;
+                    break;
+                }
+                parent = parent.parentPath;
+            }
+        }
+        return types_1.identifier(name);
     };
     /**
      * Finds the control parameter name from the enclosing render function, if it exists.
@@ -48,16 +77,21 @@ var Renderer = /** @class */ (function () {
      */
     Renderer.prototype.findControl = function () {
         var parent = this.path;
-        var defaultVal = types_1.identifier("control");
-        while (parent && !this._isRenderCall(parent.node))
+        var name = 'control';
+        while (parent && parent.node) {
+            if (parent.node.type === 'FunctionDeclaration'
+                || parent.node.type === 'ArrowFunctionExpression'
+                || parent.node.type === 'ObjectMethod'
+                || parent.node.type === 'ClassMethod') {
+                var params = parent.node.params;
+                if (params.length >= 2)
+                    name = params[1].name;
+                break;
+            }
             parent = parent.parentPath;
-        if (!parent || !parent.parentPath)
-            return defaultVal;
-        parent = parent.parentPath;
-        var params = parent.scope.block.params;
-        if (!params || params.length < 2)
-            return defaultVal;
-        return params[1];
+        }
+        this.needsControl = true;
+        return types_1.identifier(name);
     };
     /**
      * Finds the path for the enclosing control class, if it exists.
@@ -415,6 +449,14 @@ var Renderer = /** @class */ (function () {
     };
     Renderer.prototype.transformJSX = function () {
         this.path.parentPath.replaceWithMultiple(this.rmcalls);
+        if (this.renderFunction) {
+            if (this.renderFunction.node.params.length === 0) {
+                this.renderFunction.node.params.push(this.rm);
+            }
+            if (this.renderFunction.node.params.length === 1 && this.needsControl) {
+                this.renderFunction.node.params.push(this.control);
+            }
+        }
     };
     Renderer.prototype.transformOnAfterRendering = function () {
         if (!this.onAfterRendering)

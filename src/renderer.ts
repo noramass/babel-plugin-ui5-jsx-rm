@@ -12,15 +12,21 @@ export default class Renderer {
   rmcalls: Statement[] = [];
   handlerAttachments: Statement[] = [];
   rm: Identifier;
-  control: Identifier;
+  _control: Identifier;
   controlClass?: NodePath<ClassBody>;
   controlObject?: NodePath<ObjectExpression>;
   onAfterRendering?: NodePath<Function>;
+  renderFunction?: NodePath<Function>;
+  needsControl: boolean;
+
+  get control(): Identifier {
+    return this._control || (this._control = this.findControl());
+  }
 
   constructor(path: NodePath<JSXElement>) {
     this.path = path;
+    this.needsControl = false;
     this.rm = this.findRenderManager();
-    this.control = this.findControl();
     this.controlClass = this.findControlClass() || undefined;
     this.controlObject = this.findControlObject() || undefined;
     this.onAfterRendering = this.findOrCreateOnAfterRendering() || undefined;
@@ -36,16 +42,36 @@ export default class Renderer {
 
   /**
    * find the render manager identifier from render call signature.
+   * If that fails, searches the parent function call for its first argument.
    * If it can't find any, it returns a default identifier "rm".
    * @return {Identifier} the render manager name
    * @example oRM.render(<div></div>); // => oRM
+   * @example render(oRM) { <div></div> } // => oRM
    * @example <div></div> // => rm (default)
    */
   findRenderManager(): Identifier {
     let parent: NodePath = this.path;
+    let name: string = "rm";
     while (parent && !this._isRenderCall(parent.node))
       parent = parent.parentPath;
-    return identifier(parent && parent.node ? (<any>parent.node).callee.object.name : "rm");
+    if (parent && parent.node) {
+      name = (<any>parent.node).callee.object.name;
+    } else {
+      parent = this.path;
+      while (parent && parent.node) {
+        if (parent.node.type === 'FunctionDeclaration'
+          || parent.node.type === 'ArrowFunctionExpression'
+          || parent.node.type === 'ObjectMethod'
+          || parent.node.type === 'ClassMethod') {
+          this.renderFunction = <NodePath<Function>>parent;
+          let params = parent.node.params;
+          if (params.length >= 1) name = (<Identifier>params[0]).name;
+          break;
+        }
+        parent = parent.parentPath;
+      }
+    }
+    return identifier(name);
   }
 
   /**
@@ -58,14 +84,20 @@ export default class Renderer {
    */
   findControl(): Identifier {
     let parent: NodePath = this.path;
-    let defaultVal: Identifier = identifier("control");
-    while (parent && !this._isRenderCall(parent.node))
+    let name = 'control';
+    while (parent && parent.node) {
+      if (parent.node.type === 'FunctionDeclaration'
+        || parent.node.type === 'ArrowFunctionExpression'
+        || parent.node.type === 'ObjectMethod'
+        || parent.node.type === 'ClassMethod') {
+        let params = parent.node.params;
+        if (params.length >= 2) name = (<Identifier>params[1]).name;
+        break;
+      }
       parent = parent.parentPath;
-    if (!parent || !parent.parentPath) return defaultVal;
-    parent = parent.parentPath;
-    let params = (<FunctionExpression>parent.scope.block).params;
-    if (!params || params.length < 2) return defaultVal;
-    return <Identifier>params[1];
+    }
+    this.needsControl = true;
+    return identifier(name);
   }
 
 
@@ -430,6 +462,14 @@ export default class Renderer {
 
   transformJSX(): void {
     this.path.parentPath.replaceWithMultiple(this.rmcalls);
+    if (this.renderFunction) {
+      if (this.renderFunction.node.params.length === 0) {
+        this.renderFunction.node.params.push(this.rm);
+      }
+      if (this.renderFunction.node.params.length === 1 && this.needsControl) {
+        this.renderFunction.node.params.push(this.control);
+      }
+    }
   }
   transformOnAfterRendering(): void {
     if (!this.onAfterRendering) return;

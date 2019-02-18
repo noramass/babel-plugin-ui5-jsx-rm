@@ -16,7 +16,7 @@ export function compile(code: string | Function): string {
   if (typeof code === "function") {
     code = fnContent(code);
   }
-  let result = transform(code, {plugins:[plugin,"transform-class-properties"]});
+  let result = transform(code, { plugins: [plugin, "transform-class-properties"] });
   //console.log("\n\nCODE\n", result.code);
   return result.code;
 }
@@ -24,9 +24,9 @@ export function compile(code: string | Function): string {
 export function compileAndRender(code: string | Function, control?: any): string {
   let compiled = compile(code);
   let rm = new MockRenderer();
-  let fn = Function("rm","control","Control",compiled + "; return typeof MyControl !== 'undefined' ? MyControl : false");
+  let fn = Function("rm", "control", "Control", compiled + "; return typeof MyControl !== 'undefined' ? MyControl : false");
   let result = fn(rm, control, MockControl);
-  if ( result ) {
+  if (result) {
     // control definition most likely
     let ctrl = new result();
     rm.renderControl(ctrl);
@@ -52,10 +52,10 @@ export class MockControl {
   getId() {
     return "__controlcls1";
   }
-  static extend(_: string, definition: object) : typeof MockControl & typeof definition {
-    let cls = class extends MockControl {};
+  static extend(_: string, definition: object): typeof MockControl & typeof definition {
+    let cls = class extends MockControl { };
     for (var k in definition)
-      cls.prototype[ k ] = definition[ k ];
+      cls.prototype[k] = definition[k];
     return cls;
   }
 }
@@ -95,7 +95,7 @@ export class MockRenderer {
   }
 
   writeClasses() {
-    if ( this.classes.length )
+    if (this.classes.length)
       this.writeAttributeEscaped("class", this.classes.join(" "));
     this.classes = [];
   }
@@ -105,7 +105,7 @@ export class MockRenderer {
   }
 
   writeStyles() {
-    if ( Object.keys(this.styles).length )
+    if (Object.keys(this.styles).length)
       this.writeAttributeEscaped("style", Object.keys(this.styles).map(key => `${key}: ${this.styles[key]}`).join('; '));
     this.styles = {};
   }
